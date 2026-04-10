@@ -1,0 +1,47 @@
+using DesafioConsole.Services;
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        var jogoService = new JogoServices();
+
+        while (true)
+        {
+            Console.WriteLine("1. Listar Jogos");
+            Console.WriteLine("2. Adicionar Jogo");
+            Console.WriteLine("3. Alugar Jogo");
+            Console.WriteLine("4. Sair");
+            Console.Write("Escolha uma opção: ");
+            var opcao = Console.ReadLine();
+
+            switch (opcao)
+            {
+                case "1":
+                    await jogoService.ListarJogosAsync();
+                    break;
+                case "2":
+                    Console.Write("Digite o nome do jogo: ");
+                    var nome = Console.ReadLine();
+                    await jogoService.AdicionarJogoAsync(nome);
+                    break;
+                case "3":
+                    Console.Write("Digite o ID do jogo para alugar: ");
+                    if (int.TryParse(Console.ReadLine(), out int id))
+                    {
+                        await jogoService.AlugarJogoAsync(id);
+                    }
+                    else
+                    {
+                        Console.WriteLine("ID inválido.");
+                    }
+                    break;
+                case "4":
+                    return;
+                default:
+                    Console.WriteLine("Opção inválida.");
+                    break;
+            }
+        }
+    }
+}

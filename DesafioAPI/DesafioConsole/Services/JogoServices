@@ -1,0 +1,87 @@
+using System.Net.Http.Json;
+
+namespace DesafioConsole.Services
+{
+    public class Jogo
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; }
+        public bool Alugado { get; set; }
+    }
+
+    public class JogoServices
+    {
+        private readonly HttpClient _httpClient;
+
+        public JogoServices()
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+            _httpClient = new HttpClient(handler);
+            _httpClient.BaseAddress = new Uri("https://localhost:5017/");
+        }
+
+        public async Task ListarJogosAsync()
+        {
+            var jogos = await _httpClient.GetFromJsonAsync<List<Jogo>>("jogos");
+
+            if (jogos == null || jogos.Count == 0)
+            {
+                Console.WriteLine("Nenhum jogo cadastrado.");
+                return;
+            }
+
+            Console.WriteLine("\nLista de Jogos");
+            foreach (var jogo in jogos)
+            {
+                var status = jogo.Alugado ? "Alugado" : "Disponível";
+                Console.WriteLine($"ID: {jogo.Id} | Nome: {jogo.Nome} | Status: {status}");
+            }
+        }
+
+        public async Task AdicionarJogoAsync(string nome)
+        {
+            var novoJogo = new Jogo { Nome = nome, Alugado = false };
+            var response = await _httpClient.PostAsJsonAsync("jogos", novoJogo);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Jogo adicionado com sucesso!");
+            }
+            else
+            {
+                Console.WriteLine("Erro ao adicionar o jogo.");
+            }
+        }
+
+        public async Task AlugarJogoAsync(int id)
+        {
+            var response = await _httpClient.PostAsync($"api/jogos/alugar/{id}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Jogo alugado com sucesso!");
+            }
+            else
+            {
+                Console.WriteLine("Erro ao alugar o jogo. Verifique se o ID está correto e se o jogo não está alugado.");
+            }
+        }
+
+        public async Task DevolverJogoAsync(int id)
+        {
+            var response = await _httpClient.PostAsync($"api/jogos/devolver/{id}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Jogo devolvido com sucesso!");
+            }
+            else
+            {
+                Console.WriteLine("Erro ao devolver o jogo. Verifique se o ID está correto e se o jogo está alugado.");
+            }
+        }
+    }
+}
